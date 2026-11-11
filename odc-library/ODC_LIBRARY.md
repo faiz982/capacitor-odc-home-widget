@@ -12,7 +12,7 @@ Set the mobile framework to **Capacitor**, then paste:
 {
   "buildConfigurations": {
     "capacitor": {
-      "source": { "npm": "https://github.com/YOUR_GITHUB/capacitor-odc-home-widget.git#v0.1.0" }
+      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget.git#v0.1.0" }
     }
   },
   "metadata": { "name": "Home Widget Plugin", "version": "0.1.0" }
