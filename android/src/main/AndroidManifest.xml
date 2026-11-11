@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Merged into the host app at build time; no ODC build action needed. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application>
         <receiver
             android:name="com.odchomewidget.CountWidgetProvider"
@@ -37,5 +39,112 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/odc_widget_actions_info" />
         </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.InfoWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_info_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_info_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.StatsWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_stats_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_stats_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.HeroWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_hero_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_hero_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.ArticlesWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_articles_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_articles_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.GridWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_grid_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_grid_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.MessagesWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_messages_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_messages_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.TogglesWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_toggles_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_toggles_info" />
+        </receiver>
+
+        <receiver
+            android:name="com.odchomewidget.ChecklistWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_checklist_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_checklist_info" />
+        </receiver>
+
+        <!-- Rows for the scrolling templates (ARTICLES, GRID, MESSAGES, CHECKLIST). -->
+        <service
+            android:name="com.odchomewidget.OdcWidgetCollectionService"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
+        <!-- Toggle taps on TOGGLES tiles and CHECKLIST rows. -->
+        <receiver
+            android:name="com.odchomewidget.WidgetActionReceiver"
+            android:exported="false" />
     </application>
 </manifest>

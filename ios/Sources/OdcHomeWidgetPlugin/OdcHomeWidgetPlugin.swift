@@ -9,6 +9,7 @@ public class OdcHomeWidgetPlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "OdcHomeWidget"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "setWidgetData", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setTheme", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "refresh", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isPinSupported", returnType: CAPPluginReturnPromise),
@@ -19,6 +20,7 @@ public class OdcHomeWidgetPlugin: CAPPlugin, CAPBridgedPlugin {
     private let message = "Home widgets are Android-only in v1"
 
     @objc func setWidgetData(_ call: CAPPluginCall) { call.unimplemented(message) }
+    @objc func setTheme(_ call: CAPPluginCall) { call.unimplemented(message) }
     @objc func refresh(_ call: CAPPluginCall) { call.unimplemented(message) }
     @objc func clear(_ call: CAPPluginCall) { call.unimplemented(message) }
     @objc func isPinSupported(_ call: CAPPluginCall) { call.resolve(["supported": false]) }

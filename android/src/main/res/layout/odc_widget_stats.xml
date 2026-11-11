@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RemoteViews: only FrameLayout, LinearLayout, TextView, ImageView, ProgressBar, ListView and GridView. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/odc_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/odc_w_shape_card"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/odc_w_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/odc_w_shape_card" />
+
+    <TextView
+        android:id="@+id/odc_widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="@string/odc_widget_empty"
+        android:textColor="@color/odc_w_muted"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/odc_widget_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+        <include layout="@layout/odc_w_header" />
+        <LinearLayout
+            android:id="@+id/odc_w_statrow"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="0dp"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:id="@+id/odc_w_stat1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="52dp"
+                    android:layout_height="52dp">
+
+                    <ProgressBar
+                        android:id="@+id/odc_w_stat1_ring"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progressDrawable="@drawable/odc_w_ring" />
+
+                    <ImageView
+                        android:id="@+id/odc_w_stat1_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no" />
+                </FrameLayout>
+                <TextView
+                    android:id="@+id/odc_w_stat1_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="18sp"
+                    android:layout_marginTop="6dp" />
+                <TextView
+                    android:id="@+id/odc_w_stat1_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/odc_w_stat2"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="52dp"
+                    android:layout_height="52dp">
+
+                    <ProgressBar
+                        android:id="@+id/odc_w_stat2_ring"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progressDrawable="@drawable/odc_w_ring" />
+
+                    <ImageView
+                        android:id="@+id/odc_w_stat2_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no" />
+                </FrameLayout>
+                <TextView
+                    android:id="@+id/odc_w_stat2_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="18sp"
+                    android:layout_marginTop="6dp" />
+                <TextView
+                    android:id="@+id/odc_w_stat2_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/odc_w_stat3"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="52dp"
+                    android:layout_height="52dp">
+
+                    <ProgressBar
+                        android:id="@+id/odc_w_stat3_ring"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progressDrawable="@drawable/odc_w_ring" />
+
+                    <ImageView
+                        android:id="@+id/odc_w_stat3_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no" />
+                </FrameLayout>
+                <TextView
+                    android:id="@+id/odc_w_stat3_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="18sp"
+                    android:layout_marginTop="6dp" />
+                <TextView
+                    android:id="@+id/odc_w_stat3_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/odc_w_stat4"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="52dp"
+                    android:layout_height="52dp">
+
+                    <ProgressBar
+                        android:id="@+id/odc_w_stat4_ring"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progressDrawable="@drawable/odc_w_ring" />
+
+                    <ImageView
+                        android:id="@+id/odc_w_stat4_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no" />
+                </FrameLayout>
+                <TextView
+                    android:id="@+id/odc_w_stat4_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="18sp"
+                    android:layout_marginTop="6dp" />
+                <TextView
+                    android:id="@+id/odc_w_stat4_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

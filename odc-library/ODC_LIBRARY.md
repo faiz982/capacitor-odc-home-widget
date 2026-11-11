@@ -12,10 +12,10 @@ Set the mobile framework to **Capacitor**, then paste:
 {
   "buildConfigurations": {
     "capacitor": {
-      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget.git#v0.1.0" }
+      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget.git#v0.2.0" }
     }
   },
-  "metadata": { "name": "Home Widget Plugin", "version": "0.1.0" }
+  "metadata": { "name": "Home Widget Plugin", "version": "0.2.0" }
 }
 ```
 
@@ -179,3 +179,47 @@ added, so put the block on the app's default screen.
    message with `DeepLink`, then a Switch on `DeepLink` (for example
    `"approvals"` → Approvals screen).
 5. Portal → app → **Mobile distribution** → MABS 12.1 → Android build.
+
+## 6. Upgrading the library to v0.2.0 (11 templates, brand colors, toggles)
+
+1. **Extensibility:** change the tag in the JSON above to `#v0.2.0` (already shown) and publish.
+2. **Nothing else is required for the new templates.** `SetWidgetData` already takes any
+   `Kind` text and JSON, so `"INFO"`, `"STATS"`, `"HERO"`, `"ARTICLES"`, `"GRID"`,
+   `"MESSAGES"`, `"TOGGLES"` and `"CHECKLIST"` work as they are. Build the JSON with your own
+   structures and `JSONSerialize`; see the plugin README for every field.
+   Add the new names to the `WidgetKind` static entity if you use it.
+3. **Optional: `SetWidgetTheme`** client action. Input `ThemeJson` (Text); outputs `Success`, `Error`.
+   JavaScript node:
+
+```js
+var cap = window.Capacitor;
+var plugin = cap && cap.isPluginAvailable && cap.isPluginAvailable('OdcHomeWidget')
+  ? ((cap.Plugins && cap.Plugins.OdcHomeWidget) || cap.registerPlugin('OdcHomeWidget'))
+  : null;
+
+if (!plugin) { $parameters.Success = false; $parameters.Error = 'Home Widget plugin not available in this build'; $resolve(); }
+else {
+  plugin.setTheme({ data: $parameters.ThemeJson })
+    .then(function () { $parameters.Success = true; $resolve(); })
+    .catch(function (e) { $parameters.Success = false; $parameters.Error = (e && e.code ? e.code + ': ' : '') + (e && e.message ? e.message : String(e)); $resolve(); });
+}
+```
+
+   Example `ThemeJson`: `{"accent":"#0B57D0","tileActive":"#D3E3FD","onTileActive":"#041E49"}`.
+
+4. **Optional: toggle events** for `TOGGLES` and `CHECKLIST`. In the `WidgetTapListener` block:
+   - Add event `OnWidgetToggle` with inputs `Kind` (Text), `Id` (Text), `IsOn` (Boolean).
+   - Add client action `TriggerOnWidgetToggle(Kind, Id, IsOn)` that triggers it.
+   - In the `OnReady` JavaScript, after the `widgetTap` listener, add:
+
+```js
+if (plugin) {
+  if (window.__odcWidgetToggleHandle) { window.__odcWidgetToggleHandle.remove(); }
+  plugin.addListener('widgetToggle', function (e) {
+    $actions.TriggerOnWidgetToggle(e.kind || '', e.id || '', !!e.on);
+  }).then(function (handle) { window.__odcWidgetToggleHandle = handle; });
+}
+```
+
+   - In `OnDestroy`, also remove `window.__odcWidgetToggleHandle`.
+   Taps made while the app was closed arrive when the app next opens.

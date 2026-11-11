@@ -8,12 +8,17 @@ import com.getcapacitor.Plugin
 import com.getcapacitor.PluginCall
 import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.ref.WeakReference
+import java.util.concurrent.Executors
 
 @CapacitorPlugin(name = "OdcHomeWidget")
 class OdcHomeWidgetPlugin : Plugin() {
 
     companion object {
         const val EVENT_WIDGET_TAP = "widgetTap"
+        const val EVENT_WIDGET_TOGGLE = "widgetToggle"
 
         const val ERR_INVALID_KIND = "OS-PLUG-HWGT-0001"
         const val ERR_INVALID_DATA = "OS-PLUG-HWGT-0002"
@@ -21,33 +26,59 @@ class OdcHomeWidgetPlugin : Plugin() {
         const val ERR_PIN_NOT_SUPPORTED = "OS-PLUG-HWGT-0004"
         const val ERR_PIN_REFUSED = "OS-PLUG-HWGT-0005"
         const val ERR_UNEXPECTED = "OS-PLUG-HWGT-0006"
+
+        /** One worker: saves happen in call order, and image downloads stay off the UI thread. */
+        private val worker = Executors.newSingleThreadExecutor()
+
+        @Volatile
+        private var instance: WeakReference<OdcHomeWidgetPlugin>? = null
+
+        /** Called by [WidgetActionReceiver] so a running app gets toggle events at once. */
+        fun deliverPendingEvents() {
+            instance?.get()?.emitPendingEvents()
+        }
     }
 
-    // ---- Taps -------------------------------------------------------------
+    // ---- Lifecycle and events -----------------------------------------------
 
-    /** Cold start: the app was launched by a widget tap. */
     override fun load() {
         super.load()
+        instance = WeakReference(this)
         activity?.intent?.let { emitTap(it) }
+        emitPendingEvents()
     }
 
-    /** Warm start: the app was already running. */
     override fun handleOnNewIntent(intent: Intent) {
         super.handleOnNewIntent(intent)
         emitTap(intent)
     }
 
+    override fun handleOnResume() {
+        super.handleOnResume()
+        emitPendingEvents()
+    }
+
     private fun emitTap(intent: Intent) {
-        val deepLink = intent.getStringExtra(WidgetRenderer.EXTRA_DEEP_LINK) ?: return
-        val kind = intent.getStringExtra(WidgetRenderer.EXTRA_KIND) ?: ""
+        val deepLink = intent.getStringExtra(Taps.EXTRA_DEEP_LINK) ?: return
+        val kind = intent.getStringExtra(Taps.EXTRA_KIND) ?: ""
         // Consume the extra so an activity recreation doesn't fire the tap twice.
-        intent.removeExtra(WidgetRenderer.EXTRA_DEEP_LINK)
+        intent.removeExtra(Taps.EXTRA_DEEP_LINK)
         val event = JSObject()
         event.put("kind", kind)
         event.put("deepLink", deepLink)
         // retainUntilConsumed = true: a tap that cold-starts the app is queued
         // until the ODC screen registers its listener.
         notifyListeners(EVENT_WIDGET_TAP, event, true)
+    }
+
+    private fun emitPendingEvents() {
+        WidgetStore.drainEvents(context).forEach { e ->
+            val event = JSObject()
+            event.put("kind", e.optString("kind"))
+            event.put("id", e.optString("id"))
+            event.put("on", e.optBoolean("on"))
+            notifyListeners(EVENT_WIDGET_TOGGLE, event, true)
+        }
     }
 
     // ---- Methods ----------------------------------------------------------
@@ -60,19 +91,52 @@ class OdcHomeWidgetPlugin : Plugin() {
             call.reject("data is required and must be a JSON string", ERR_INVALID_DATA)
             return
         }
-        try {
-            WidgetDataParser.parse(kind, data)
+        val json = try {
+            WidgetValidator.validate(kind, data)
         } catch (e: IllegalArgumentException) {
             call.reject(e.message ?: "Invalid widget data", ERR_INVALID_DATA)
             return
         }
-        guarded(call) {
-            if (!WidgetStore.save(context, kind, data)) {
-                call.reject("Could not save widget data", ERR_STORAGE)
-                return@guarded
+        worker.execute {
+            try {
+                // Download images first, so the widget never shows a half-loaded state.
+                ImageCache.prefetch(context, json)
+                if (!WidgetStore.save(context, kind, data)) {
+                    call.reject("Could not save widget data", ERR_STORAGE)
+                    return@execute
+                }
+                WidgetRenderer.refresh(context, kind)
+                call.resolve()
+            } catch (e: Exception) {
+                call.reject(e.message ?: "Unexpected error", ERR_UNEXPECTED, e)
             }
-            WidgetRenderer.refresh(context, kind)
-            call.resolve()
+        }
+    }
+
+    @PluginMethod
+    fun setTheme(call: PluginCall) {
+        val data = call.getString("data") ?: call.getObject("data")?.toString()
+        val theme = if (data.isNullOrBlank()) {
+            null
+        } else {
+            try {
+                JSONObject(data).also { Themes.validate(it) }
+            } catch (e: JSONException) {
+                call.reject("data must be a JSON object string: ${e.message}", ERR_INVALID_DATA)
+                return
+            } catch (e: IllegalArgumentException) {
+                call.reject(e.message ?: "Invalid theme", ERR_INVALID_DATA)
+                return
+            }
+        }
+        worker.execute {
+            try {
+                WidgetStore.saveTheme(context, theme?.toString())
+                WidgetKind.values().forEach { WidgetRenderer.refresh(context, it) }
+                call.resolve()
+            } catch (e: Exception) {
+                call.reject(e.message ?: "Unexpected error", ERR_UNEXPECTED, e)
+            }
         }
     }
 
@@ -133,7 +197,7 @@ class OdcHomeWidgetPlugin : Plugin() {
         val raw = call.getString("kind")
         val kind = WidgetKind.parse(raw)
         if (kind == null) {
-            call.reject("kind must be COUNT, LIST or ACTIONS (got \"${raw ?: ""}\")", ERR_INVALID_KIND)
+            call.reject("kind must be one of ${WidgetKind.names} (got \"${raw ?: ""}\")", ERR_INVALID_KIND)
         }
         return kind
     }

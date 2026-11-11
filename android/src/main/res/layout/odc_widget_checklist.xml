@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RemoteViews: only FrameLayout, LinearLayout, TextView, ImageView, ProgressBar, ListView and GridView. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/odc_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/odc_w_shape_card"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/odc_w_bg"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no"
+        android:scaleType="fitXY"
+        android:src="@drawable/odc_w_shape_card" />
+
+    <TextView
+        android:id="@+id/odc_widget_empty"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:padding="16dp"
+        android:text="@string/odc_widget_empty"
+        android:textColor="@color/odc_w_muted"
+        android:textSize="14sp" />
+
+    <LinearLayout
+        android:id="@+id/odc_widget_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+        <include layout="@layout/odc_w_header" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+            <ListView
+                android:id="@+id/odc_w_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:divider="@null"
+                android:dividerHeight="0dp"
+                android:scrollbars="none" />
+
+            <TextView
+                android:id="@+id/odc_w_none"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/odc_widget_list_none"
+                android:textSize="14sp" />
+        </FrameLayout>
+    </LinearLayout>
+</FrameLayout>

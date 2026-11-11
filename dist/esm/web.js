@@ -5,6 +5,9 @@ export class OdcHomeWidgetWeb extends WebPlugin {
     async setWidgetData(_options) {
         throw this.unavailable(MESSAGE);
     }
+    async setTheme(_options) {
+        throw this.unavailable(MESSAGE);
+    }
     async refresh(_options) {
         throw this.unavailable(MESSAGE);
     }

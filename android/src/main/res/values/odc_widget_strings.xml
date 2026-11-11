@@ -3,9 +3,25 @@
     <string name="odc_widget_empty">Open the app to set up this widget</string>
     <string name="odc_widget_list_none">Nothing to show</string>
     <string name="odc_widget_count_label">Count</string>
+    <string name="odc_widget_count_description">One big number</string>
     <string name="odc_widget_list_label">List</string>
+    <string name="odc_widget_list_description">Up to 3 items</string>
     <string name="odc_widget_actions_label">Quick actions</string>
-    <string name="odc_widget_count_description">Shows one number from the app</string>
-    <string name="odc_widget_list_description">Shows up to 3 items from the app</string>
     <string name="odc_widget_actions_description">Up to 3 shortcuts into the app</string>
+    <string name="odc_widget_info_label">Info</string>
+    <string name="odc_widget_info_description">Rows of details, like weather or stocks</string>
+    <string name="odc_widget_stats_label">Stats</string>
+    <string name="odc_widget_stats_description">Up to 4 stats with progress rings</string>
+    <string name="odc_widget_hero_label">Feature</string>
+    <string name="odc_widget_hero_description">One story with a background image</string>
+    <string name="odc_widget_articles_label">Articles</string>
+    <string name="odc_widget_articles_description">Scrollable list with thumbnails</string>
+    <string name="odc_widget_grid_label">Gallery</string>
+    <string name="odc_widget_grid_description">Scrollable grid of images</string>
+    <string name="odc_widget_messages_label">Messages</string>
+    <string name="odc_widget_messages_description">Scrollable message cards</string>
+    <string name="odc_widget_toggles_label">Switches</string>
+    <string name="odc_widget_toggles_description">Up to 6 tiles you can switch on and off</string>
+    <string name="odc_widget_checklist_label">Checklist</string>
+    <string name="odc_widget_checklist_description">Tick items off from the home screen</string>
 </resources>
