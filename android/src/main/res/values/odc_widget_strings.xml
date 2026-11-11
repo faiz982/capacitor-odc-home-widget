@@ -2,6 +2,8 @@
 <resources>
     <string name="odc_widget_empty">Open the app to set up this widget</string>
     <string name="odc_widget_list_none">Nothing to show</string>
+    <string name="odc_widget_custom_label">Widget</string>
+    <string name="odc_widget_custom_description">Any layout your app designs</string>
     <string name="odc_widget_count_label">Count</string>
     <string name="odc_widget_count_description">One big number</string>
     <string name="odc_widget_list_label">List</string>

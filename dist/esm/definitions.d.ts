@@ -1,6 +1,6 @@
 import type { PluginListenerHandle } from '@capacitor/core';
 /** The native widget templates. */
-export type WidgetKind = 'COUNT' | 'LIST' | 'ACTIONS' | 'INFO' | 'STATS' | 'HERO' | 'ARTICLES' | 'GRID' | 'MESSAGES' | 'TOGGLES' | 'CHECKLIST';
+export type WidgetKind = 'COUNT' | 'LIST' | 'ACTIONS' | 'INFO' | 'STATS' | 'HERO' | 'ARTICLES' | 'GRID' | 'MESSAGES' | 'TOGGLES' | 'CHECKLIST' | 'WIDGET';
 /**
  * Built-in icon names: search, refresh, add, check, check_circle, circle,
  * chevron_left, chevron_right, arrow_up, arrow_down, favorite, star, home, play,
@@ -216,4 +216,58 @@ export interface OdcHomeWidgetPlugin {
     addListener(eventName: 'widgetToggle', listener: (event: WidgetToggleEvent) => void): Promise<PluginListenerHandle>;
     /** Removes all listeners for this plugin. */
     removeAllListeners(): Promise<void>;
+}
+/** A theme color name (accent, muted, onBackground, tile...) or a hex color (#RRGGBB / #AARRGGBB). */
+export type LayoutColor = string;
+/**
+ * One element of a WIDGET layout. Containers (column, row, box) have children;
+ * the others are leaves. Sizes are in dp (text size in sp). Exact sizes for
+ * icon, image, progress and spacer need Android 12+; older versions use defaults.
+ */
+export interface LayoutElement {
+    type: 'column' | 'row' | 'box' | 'text' | 'icon' | 'image' | 'progress' | 'spacer' | 'button';
+    children?: LayoutElement[];
+    /** dp for all sides, or [start, top, end, bottom]. */
+    padding?: number | [number, number, number, number];
+    /** Space between children of a column/row/box, in dp. */
+    gap?: number;
+    /** > 0 makes the element fill the remaining space of its column/row. */
+    weight?: number;
+    /** start | center | end (children of a container, or text alignment). */
+    align?: 'start' | 'center' | 'end';
+    /** top | center | bottom. */
+    valign?: 'top' | 'center' | 'bottom';
+    /** column/row: flat color; box: rounded tile color; button: pill color. */
+    background?: LayoutColor;
+    /** text, icon, button content, progress ring. */
+    color?: LayoutColor;
+    /** text / button label. */
+    text?: string;
+    /** text size in sp; icon/progress size or spacer length in dp. */
+    size?: number;
+    bold?: boolean;
+    strike?: boolean;
+    maxLines?: number;
+    /** icon name (see WidgetIcon). */
+    name?: WidgetIcon;
+    /** button / progress icon. */
+    icon?: WidgetIcon;
+    /** image source. */
+    src?: WidgetImage;
+    width?: number;
+    height?: number;
+    /** image corner radius as a fraction of the shorter side (0-0.5, default 0.12). */
+    radius?: number;
+    /** progress 0-100. */
+    value?: number;
+    visible?: boolean;
+    /** Tapping this element opens the app with this deep link (widgetTap event). */
+    deepLink?: string;
+}
+/** Data for the WIDGET kind: the whole layout is described by the app. */
+export interface CustomWidgetData {
+    layout: LayoutElement;
+    /** Tapping empty space opens the app with this deep link. */
+    deepLink?: string;
+    theme?: WidgetTheme;
 }

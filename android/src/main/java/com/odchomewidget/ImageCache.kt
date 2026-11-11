@@ -30,7 +30,7 @@ object ImageCache {
     private const val MAX_PX = 512
     private const val MAX_BYTES = 8 * 1024 * 1024
     private const val MAX_FILES = 200
-    private val IMAGE_KEYS = setOf("image", "thumbnail", "avatar")
+    private val IMAGE_KEYS = setOf("image", "thumbnail", "avatar", "src")
 
     fun isImageSource(src: String): Boolean =
         src.startsWith("https://", ignoreCase = true) ||

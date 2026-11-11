@@ -122,6 +122,8 @@ class Painter(context: Context, private val views: RemoteViews, val theme: Widge
 
     fun text(viewId: Int, role: (Palette) -> Int) = set(viewId, "setTextColor", role)
 
+    fun background(viewId: Int, role: (Palette) -> Int) = set(viewId, "setBackgroundColor", role)
+
     fun progress(viewId: Int, role: (Palette) -> Int) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             views.setColorStateList(

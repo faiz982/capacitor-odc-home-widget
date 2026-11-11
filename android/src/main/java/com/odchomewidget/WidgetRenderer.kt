@@ -115,6 +115,7 @@ object WidgetRenderer {
             WidgetKind.STATS -> stats(context, views, p, json)
             WidgetKind.HERO -> hero(context, views, p, json)
             WidgetKind.TOGGLES -> toggles(context, views, p, json)
+            WidgetKind.WIDGET -> LayoutRenderer.render(context, views, R.id.odc_widget_content, json, p.theme)
             WidgetKind.ARTICLES, WidgetKind.GRID, WidgetKind.MESSAGES, WidgetKind.CHECKLIST ->
                 collection(context, views, p, kind, json, widgetId)
         }

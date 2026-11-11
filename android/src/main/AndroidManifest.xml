@@ -136,6 +136,18 @@
                 android:resource="@xml/odc_widget_checklist_info" />
         </receiver>
 
+        <receiver
+            android:name="com.odchomewidget.CustomWidgetProvider"
+            android:exported="false"
+            android:label="@string/odc_widget_custom_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/odc_widget_custom_info" />
+        </receiver>
+
         <!-- Rows for the scrolling templates (ARTICLES, GRID, MESSAGES, CHECKLIST). -->
         <service
             android:name="com.odchomewidget.OdcWidgetCollectionService"

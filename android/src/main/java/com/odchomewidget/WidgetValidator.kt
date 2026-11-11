@@ -15,6 +15,7 @@ object WidgetValidator {
         WidgetKind.STATS, WidgetKind.TOGGLES -> "tiles"
         WidgetKind.MESSAGES -> "messages"
         WidgetKind.HERO -> null
+        WidgetKind.WIDGET -> "layout"
     }
 
     /** @throws IllegalArgumentException with a message fit to show to a developer. */
@@ -27,6 +28,12 @@ object WidgetValidator {
         val field = requiredField(kind) ?: return obj
         val value = obj.valueOf(field)
             ?: throw IllegalArgumentException("${kind.name} data needs a \"$field\" field")
+        if (kind == WidgetKind.WIDGET) {
+            if (value !is JSONObject) throw IllegalArgumentException("WIDGET \"layout\" must be an object like {\"type\":\"column\",\"children\":[...]}")
+            LayoutRenderer.validate(value)
+            obj.obj("theme")?.let { Themes.validate(it) }
+            return obj
+        }
         if (field != "value" && value !is JSONArray) {
             throw IllegalArgumentException("${kind.name} \"$field\" must be an array")
         }

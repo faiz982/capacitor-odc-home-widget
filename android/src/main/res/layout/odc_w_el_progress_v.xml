@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/odc_w_el"
+    android:layout_width="48dp"
+    android:layout_height="48dp">
+
+    <ProgressBar
+        android:id="@+id/odc_w_el_ring"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:indeterminate="false"
+        android:max="100"
+        android:progressDrawable="@drawable/odc_w_ring" />
+
+    <ImageView
+        android:id="@+id/odc_w_el_icon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_gravity="center"
+        android:importantForAccessibility="no"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/odc_w_el_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:maxLines="1"
+        android:textSize="12sp"
+        android:visibility="gone" />
+</FrameLayout>

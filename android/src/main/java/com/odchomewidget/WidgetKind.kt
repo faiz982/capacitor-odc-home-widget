@@ -23,7 +23,10 @@ enum class WidgetKind(
     GRID(GridWidgetProvider::class.java, R.layout.odc_widget_grid, collection = true),
     MESSAGES(MessagesWidgetProvider::class.java, R.layout.odc_widget_messages, collection = true),
     TOGGLES(TogglesWidgetProvider::class.java, R.layout.odc_widget_toggles),
-    CHECKLIST(ChecklistWidgetProvider::class.java, R.layout.odc_widget_checklist, collection = true);
+    CHECKLIST(ChecklistWidgetProvider::class.java, R.layout.odc_widget_checklist, collection = true),
+
+    /** Fully custom: the JSON "layout" tree is drawn by [LayoutRenderer]. */
+    WIDGET(CustomWidgetProvider::class.java, R.layout.odc_widget_custom);
 
     fun componentName(context: Context) = ComponentName(context, providerClass)
 

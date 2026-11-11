@@ -93,6 +93,59 @@ reply, chat, bell, bolt, trending_up, info.
 { "title": "Groceries", "icon": "check", "items": [ { "id": "milk", "text": "Milk", "checked": false } ] }
 ```
 
+## WIDGET: design any layout from JSON
+
+One kind, `WIDGET`, draws whatever layout the JSON describes. Send it with
+`SetWidgetData(Kind = "WIDGET", DataJson = ...)`; change the JSON to change the design.
+
+```json
+{
+  "deepLink": "approvals",
+  "layout": {
+    "type": "column", "padding": 16, "gap": 4,
+    "children": [
+      { "type": "row", "gap": 8, "children": [
+        { "type": "icon", "name": "check_circle", "color": "accent" },
+        { "type": "text", "text": "Open approvals", "size": 16, "bold": true, "weight": 1 },
+        { "type": "icon", "name": "refresh", "color": "muted", "deepLink": "refresh" }
+      ]},
+      { "type": "spacer" },
+      { "type": "text", "text": "12", "size": 40, "bold": true, "color": "accent" },
+      { "type": "text", "text": "Updated 15:42", "color": "muted" },
+      { "type": "row", "gap": 8, "children": [
+        { "type": "button", "text": "Approve all", "icon": "check", "deepLink": "approve", "weight": 1 },
+        { "type": "button", "text": "Open", "background": "tile", "color": "onTile", "deepLink": "approvals", "weight": 1 }
+      ]}
+    ]
+  }
+}
+```
+
+| Element | Purpose | Main fields |
+|---|---|---|
+| `column` | Stack children vertically | `children`, `gap`, `padding`, `align`, `valign`, `background` (flat) |
+| `row` | Place children side by side | same as column |
+| `box` | Rounded tile around its children | `children`, `background` (default `tile`), `padding` (default 12) |
+| `text` | Text | `text`, `size` (sp), `color`, `bold`, `strike`, `maxLines`, `align` |
+| `icon` | Built-in icon | `name`, `color`, `size` |
+| `image` | Picture from URL or data URI | `src`, `width`, `height`, `radius` |
+| `progress` | Ring 0-100 | `value`, `color`, `icon`, `text`, `size` |
+| `spacer` | Space; without `size` it fills the free space | `size` |
+| `button` | Pill with label and icon | `text`, `icon`, `background` (default `accent`), `color` |
+
+Every element also takes `weight` (fill the remaining space of its row/column),
+`padding`, `visible` and `deepLink` (tap opens the app and fires `widgetTap`).
+
+**Colors** are theme names (`background`, `onBackground`, `muted`, `accent`,
+`onAccent`, `tile`, `onTile`, `tileActive`, `onTileActive`, `positive`,
+`negative`), which follow your `setTheme` brand colors and dark mode, or fixed
+hex values like `#0B57D0`.
+
+**Limits:** 80 elements, 8 levels deep, 90 tappable elements. Exact sizes for
+icons, images, rings and spacers need Android 12+; older phones use defaults
+(icon 24dp, image 120dp tall in a column / 56dp in a row, ring 48dp, spacer 8dp).
+Android widgets can't show text inputs or animations.
+
 ## Brand colors
 
 Call `setTheme` once (for example at app start); a widget's own `theme` overrides it.
@@ -137,7 +190,7 @@ when it next starts or resumes. Update your own data in the handler.
 
 | Code | Meaning |
 |---|---|
-| `OS-PLUG-HWGT-0001` | `kind` is not one of the 11 kinds |
+| `OS-PLUG-HWGT-0001` | `kind` is not one of the 12 kinds |
 | `OS-PLUG-HWGT-0002` | `data` missing, not JSON, wrong shape, bad color, or a toggle/checklist item without `id` |
 | `OS-PLUG-HWGT-0003` | Could not save the data |
 | `OS-PLUG-HWGT-0004` | Launcher can't pin widgets from the app |
