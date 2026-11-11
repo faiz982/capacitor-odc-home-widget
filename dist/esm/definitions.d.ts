@@ -265,8 +265,21 @@ export interface LayoutElement {
     deepLink?: string;
 }
 /** Data for the WIDGET kind: the whole layout is described by the app. */
+/** Full-bleed WIDGET background, drawn at the widget's size. */
+export interface WidgetBackgroundData {
+    /** 1-6 hex colors; one color is a solid fill. */
+    gradient?: string[];
+    /** CSS-style degrees (0 bottom→top, 90 left→right). Default 135. */
+    angle?: number;
+    /** Image under the gradient, center-cropped. */
+    image?: WidgetImage;
+    decoration?: 'none' | 'rings' | 'circles' | 'waves';
+    /** Hex with alpha, default #40FFFFFF. */
+    decorationColor?: string;
+}
 export interface CustomWidgetData {
     layout: LayoutElement;
+    background?: WidgetBackgroundData;
     /** Tapping empty space opens the app with this deep link. */
     deepLink?: string;
     theme?: WidgetTheme;

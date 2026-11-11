@@ -141,6 +141,29 @@ Every element also takes `weight` (fill the remaining space of its row/column),
 `negative`), which follow your `setTheme` brand colors and dark mode, or fixed
 hex values like `#0B57D0`.
 
+**Background** (optional, top level next to `layout`): a full-bleed gradient,
+image and/or decoration, drawn at the widget's exact size with rounded corners.
+
+```json
+{
+  "background": { "gradient": ["#8BE04E", "#1BB8A9"], "angle": 135,
+                  "decoration": "rings", "decorationColor": "#40FFFFFF" },
+  "layout": { "type": "column", "padding": 16, "children": [
+    { "type": "spacer" },
+    { "type": "text", "text": "Get started", "size": 16, "bold": true, "color": "#FFFFFF" },
+    { "type": "text", "text": "Track your daily activities.", "color": "#E6FFFFFF" }
+  ]}
+}
+```
+
+| Field | Meaning |
+|---|---|
+| `gradient` | 1-6 hex colors (one color = solid fill) |
+| `angle` | CSS-style degrees: 0 bottom→top, 90 left→right, 135 (default) top-left→bottom-right |
+| `image` | URL or data URI, center-cropped under the gradient (use colors with alpha, e.g. `#80000000`, as a scrim) |
+| `decoration` | `rings` (concentric outlines, top right), `circles`, `waves`, or `none` |
+| `decorationColor` | Hex with alpha, default `#40FFFFFF` |
+
 **Limits:** 80 elements, 8 levels deep, 90 tappable elements. Exact sizes for
 icons, images, rings and spacers need Android 12+; older phones use defaults
 (icon 24dp, image 120dp tall in a column / 56dp in a row, ring 48dp, spacer 8dp).

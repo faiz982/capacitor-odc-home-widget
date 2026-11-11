@@ -32,6 +32,10 @@ object WidgetValidator {
             if (value !is JSONObject) throw IllegalArgumentException("WIDGET \"layout\" must be an object like {\"type\":\"column\",\"children\":[...]}")
             LayoutRenderer.validate(value)
             obj.obj("theme")?.let { Themes.validate(it) }
+            obj.valueOf("background")?.let { bg ->
+                if (bg !is JSONObject) throw IllegalArgumentException("WIDGET \"background\" must be an object like {\"gradient\":[\"#8BE04E\",\"#1BB8A9\"]}")
+                WidgetBackground.validate(bg)
+            }
             return obj
         }
         if (field != "value" && value !is JSONArray) {

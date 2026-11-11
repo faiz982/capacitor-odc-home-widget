@@ -115,7 +115,15 @@ object WidgetRenderer {
             WidgetKind.STATS -> stats(context, views, p, json)
             WidgetKind.HERO -> hero(context, views, p, json)
             WidgetKind.TOGGLES -> toggles(context, views, p, json)
-            WidgetKind.WIDGET -> LayoutRenderer.render(context, views, R.id.odc_widget_content, json, p.theme)
+            WidgetKind.WIDGET -> {
+                json.obj("background")?.let { bg ->
+                    runCatching { WidgetBackground.draw(context, widgetId, bg) }.getOrNull()?.let { bitmap ->
+                        p.tint(R.id.odc_w_bg) { Color.TRANSPARENT }
+                        views.setImageViewBitmap(R.id.odc_w_bg, bitmap)
+                    }
+                }
+                LayoutRenderer.render(context, views, R.id.odc_widget_content, json, p.theme)
+            }
             WidgetKind.ARTICLES, WidgetKind.GRID, WidgetKind.MESSAGES, WidgetKind.CHECKLIST ->
                 collection(context, views, p, kind, json, widgetId)
         }
