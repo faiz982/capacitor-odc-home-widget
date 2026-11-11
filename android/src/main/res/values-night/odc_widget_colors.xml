@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="odc_widget_bg">#FF202124</color>
+    <color name="odc_widget_text_primary">#FFE8EAED</color>
+    <color name="odc_widget_text_secondary">#FF9AA0A6</color>
+    <color name="odc_widget_accent">#FF8AB4F8</color>
+    <color name="odc_widget_button_bg">#FF303134</color>
+    <color name="odc_widget_button_text">#FF8AB4F8</color>
+    <color name="odc_widget_divider">#1FFFFFFF</color>
+</resources>

@@ -1,0 +1,26 @@
+# dist/ is committed on purpose: MABS installs the plugin from a Git tag
+# and does not run the TypeScript build.
+
+node_modules/
+*.tgz
+
+# Android
+android/build/
+android/.gradle/
+android/local.properties
+.idea/
+*.iml
+
+# Example app
+example-app/node_modules/
+example-app/www/vendor/
+example-app/android/app/build/
+example-app/android/build/
+example-app/android/.gradle/
+example-app/android/local.properties
+example-app/android/app/src/main/assets/public/
+example-app/android/capacitor-cordova-android-plugins/
+
+# OS
+.DS_Store
+Thumbs.db
