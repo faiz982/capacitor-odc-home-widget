@@ -1,5 +1,6 @@
 ext {
     junitVersion = project.hasProperty('junitVersion') ? rootProject.ext.junitVersion : '4.13.2'
+    androidxWorkVersion = project.hasProperty('androidxWorkVersion') ? rootProject.ext.androidxWorkVersion : '2.10.1'
     androidxAppCompatVersion = project.hasProperty('androidxAppCompatVersion') ? rootProject.ext.androidxAppCompatVersion : '1.7.1'
 }
 
@@ -28,8 +29,8 @@ android {
         // higher than the app's breaks the manifest merge in MABS builds.
         minSdkVersion project.hasProperty('minSdkVersion') ? rootProject.ext.minSdkVersion : 23
         targetSdkVersion project.hasProperty('targetSdkVersion') ? rootProject.ext.targetSdkVersion : 36
-        versionCode 7
-        versionName "0.5.0"
+        versionCode 8
+        versionName "0.6.0"
     }
     buildTypes {
         release {
@@ -58,5 +59,7 @@ dependencies {
     // Plugin.getActivity() returns AppCompatActivity; Capacitor 8 doesn't expose AppCompat to plugins.
     implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    // Background refresh and button http calls while the app is closed.
+    implementation "androidx.work:work-runtime:$androidxWorkVersion"
     testImplementation "junit:junit:$junitVersion"
 }

@@ -51,9 +51,13 @@ Keys are matched case-insensitively, so ODC `JSONSerialize` output works.
 | `progress` | Ring 0-100 | `value`, `color`, `icon`, `text`, `size` |
 | `spacer` | Space; without `size` it fills the free space | `size` |
 | `button` | Pill with label and icon | `text`, `icon`, `background` (default `accent`), `color` |
+| `clock` | Live time/date that ticks by itself, even with the app closed | `format` (`HH:mm:ss`, `EEE d MMM`...), `format12`, `format24`, `timeZone`, `size`, `color`, `bold` |
+| `timer` | Live stopwatch / countdown | `since` or `until` (epoch ms or ISO date-time), `format`, `size`, `color`, `bold` |
 
 Every element also takes `weight` (fill the remaining space of its row/column),
-`padding`, `visible` and `deepLink` (tap opens the app and fires `widgetTap`).
+`padding`, `visible` (true/false or a condition, see below), `deepLink` (tap
+opens the app and fires `widgetTap`) and `action` (tap does something without
+opening the app, see below).
 
 **Icons** (`icon.name`, `button.icon`, `progress.icon`): search, refresh, add,
 check, check_circle, circle, chevron_left, chevron_right, arrow_up, arrow_down,
@@ -98,6 +102,102 @@ icons, images, rings and spacers need Android 12+; older phones use defaults
 (icon 24dp, image 120dp tall in a column / 56dp in a row, ring 48dp, spacer 8dp).
 Android widgets can't show text inputs or animations.
 
+## Live widgets: placeholders, refresh, clocks and buttons
+
+Android widgets can't run HTML or JavaScript, and app code can't run every
+second while the app is closed. The plugin covers the same needs natively:
+
+- **Clocks and timers tick on their own**: `clock` and `timer` elements are
+  drawn by the launcher and update every second (with `ss` in the format) with
+  no battery cost.
+- **`{{placeholders}}`** in any string of the JSON are filled from live
+  **values**: `{{temp}}`, dot paths `{{current.temperature_2m}}`,
+  `{{items.0.name}}`, and filters `{{temp|round}}` (`round`, `floor`, `ceil`,
+  `fixed1`, `fixed2`, `upper`, `lower`, `time`, `date`). A string that is only
+  one placeholder keeps its type, so `"value": "{{progress}}"` stays a number.
+- **Values**: the JSON's `values` are starting values (a key that already
+  has a value keeps it, so state survives the app calling `setWidgetData`
+  again). After that, `setWidgetValues()` from the app, the background
+  `refresh`, `http` responses and state buttons overwrite them. Read them back
+  with `getWidgetValues()`; `clear()` resets everything.
+- **`refresh`** fetches JSON from your API (for example an ODC REST API
+  endpoint) in the background and merges it into the values, while the app is
+  closed. Android runs it at most every 15 minutes and may delay it to save
+  battery; for anything faster, update from the app with `setWidgetValues`.
+  After each refresh `{{_updatedTime}}` (HH:mm) is set; `{{_error}}` holds the
+  last failure.
+- **`visible`** takes a condition after placeholders are filled:
+  `"{{lights}}"`, `"{{page}} == 2"`, `"{{temp}} > 25"`, `"{{status}} != done"`.
+
+### Buttons that work without opening the app
+
+Give any element an `action`:
+
+| `type` | Fields | What a tap does |
+|---|---|---|
+| `open` | `deepLink` | Opens the app (`widgetTap`), same as `deepLink` |
+| `set` | `key`, `value` | Sets a value and redraws |
+| `toggle` | `key` | Flips a true/false value |
+| `add` | `key`, `by` (default 1), `min`, `max` | Adds to a number (use a negative `by` to subtract) |
+| `cycle` | `key`, `values` | Moves to the next value in the list (pages, tabs, modes) |
+| `refresh` | | Runs `refresh` now |
+| `http` | `url`, `method` (POST), `headers`, `body`, `key`, `merge` (true) | Calls your API in the background; the JSON response is merged into the values |
+
+`set`, `toggle`, `add`, `cycle` and `http` also fire `widgetAction
+{ type, id, key, value, ok, error }` in the app: straight away if it is
+running, otherwise when it next opens. Add an `id` to an action to tell them apart.
+
+### Example: clock and live weather
+
+Uses the free Open-Meteo API (no key). The clock ticks every second; the
+temperature refreshes every 30 minutes, or when the refresh icon is tapped.
+
+```json
+{
+  "values": { "city": "London" },
+  "refresh": { "url": "https://api.open-meteo.com/v1/forecast?latitude=51.51&longitude=-0.13&current=temperature_2m,wind_speed_10m", "minutes": 30 },
+  "background": { "gradient": ["#4FACFE", "#0061D5"], "decoration": "circles" },
+  "layout": { "type": "column", "padding": 16, "children": [
+    { "type": "row", "children": [
+      { "type": "clock", "format": "HH:mm:ss", "size": 30, "bold": true, "color": "#FFFFFF", "weight": 1 },
+      { "type": "icon", "name": "refresh", "color": "#FFFFFF", "action": { "type": "refresh" } }
+    ]},
+    { "type": "clock", "format": "EEEE, d MMMM", "color": "#E6FFFFFF" },
+    { "type": "spacer" },
+    { "type": "row", "gap": 10, "children": [
+      { "type": "icon", "name": "sun", "size": 32, "color": "#FFFFFF" },
+      { "type": "text", "text": "{{current.temperature_2m|round}}°", "size": 34, "bold": true, "color": "#FFFFFF" },
+      { "type": "column", "weight": 1, "children": [
+        { "type": "text", "text": "{{city}}", "bold": true, "color": "#FFFFFF" },
+        { "type": "text", "text": "Wind {{current.wind_speed_10m|round}} km/h · {{_updatedTime}}", "size": 12, "color": "#CCFFFFFF", "maxLines": 1 }
+      ]}
+    ]}
+  ]}
+}
+```
+
+### Example: interactive buttons
+
+```json
+{
+  "values": { "lights": false, "water": 0 },
+  "layout": { "type": "column", "padding": 16, "gap": 12, "children": [
+    { "type": "row", "gap": 8, "children": [
+      { "type": "icon", "name": "lightbulb", "color": "accent" },
+      { "type": "text", "text": "Living room", "bold": true, "weight": 1 },
+      { "type": "button", "text": "On", "visible": "{{lights}}", "action": { "type": "toggle", "key": "lights", "id": "lights" } },
+      { "type": "button", "text": "Off", "background": "tile", "color": "onTile", "visible": "{{lights}} == false", "action": { "type": "toggle", "key": "lights", "id": "lights" } }
+    ]},
+    { "type": "row", "gap": 8, "children": [
+      { "type": "text", "text": "Water {{water}}%", "size": 16, "weight": 1 },
+      { "type": "button", "text": "−", "background": "tile", "color": "onTile", "action": { "type": "add", "key": "water", "by": -25, "min": 0 } },
+      { "type": "button", "text": "+", "action": { "type": "add", "key": "water", "by": 25, "max": 100, "id": "water" } }
+    ]},
+    { "type": "progress", "value": "{{water}}", "icon": "favorite", "size": 56 }
+  ]}
+}
+```
+
 ## Brand colors
 
 Theme color names in the layout (`accent`, `muted`, `tile`...) resolve to these. Call `setTheme` once (for example at app start); the widget's own `theme` overrides it.
@@ -122,12 +222,16 @@ switch at the next update.
 |---|---|
 | `setWidgetData({ kind?, data })` | `void`. `data` is a JSON **string**; resolves after images are downloaded |
 | `setTheme({ data })` | `void`. `""` resets to the default colors |
+| `setWidgetValues({ data })` | `void`. Merges a JSON object string into the live values and redraws |
+| `getWidgetValues()` | `{ data }`: all live values as a JSON string |
+| `refreshNow()` | `{ data }`: runs `refresh` now, returns the new values |
 | `refresh()` | `void` |
 | `clear()` | `void` |
 | `isPinSupported()` | `{ supported }` |
 | `requestPin()` | `void` (Android 8+, launcher must support it) |
 | `getInstalledCount()` | `{ count }` |
 | `addListener('widgetTap', cb)` | `cb({ kind, deepLink })` |
+| `addListener('widgetAction', cb)` | `cb({ type, id, key, value, ok, error })` |
 | `removeAllListeners()` | `void` |
 
 ## Error codes
@@ -158,8 +262,8 @@ See [odc-library/ODC_LIBRARY.md](odc-library/ODC_LIBRARY.md).
 ## Limitations
 
 - One data set: every Widget on the home screen shows the same JSON.
-- The widget only changes when the app calls `setWidgetData` / `setTheme`.
-- Images are scaled to 512 px; no text inputs, animations or scrolling lists.
+- Clocks and timers tick every second; other data updates when the app sends it, on a button press, or on the background refresh (15 minutes at the fastest).
+- No HTML/JavaScript, text inputs, animations or scrolling lists. Images are scaled to 512 px.
 - Android only.
 
 ## License

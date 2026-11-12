@@ -15,6 +15,16 @@ abstract class BaseWidgetProvider(private val kind: WidgetKind) : AppWidgetProvi
         WidgetRenderer.update(context, appWidgetManager, kind, appWidgetIds)
     }
 
+    // First widget added: restart the background refresh if the JSON has one.
+    override fun onEnabled(context: Context) {
+        WidgetSync.schedule(context, WidgetRenderer.readData(context, kind))
+    }
+
+    // Last widget removed: stop refreshing.
+    override fun onDisabled(context: Context) {
+        WidgetSync.cancel(context)
+    }
+
     // Redraw on resize: the background bitmap is drawn at the widget's size.
     override fun onAppWidgetOptionsChanged(
         context: Context,

@@ -39,6 +39,22 @@ internal object ElementLayouts {
         "button_h" to R.layout.odc_w_el_button_h,
         "button_vw" to R.layout.odc_w_el_button_vw,
         "button_hw" to R.layout.odc_w_el_button_hw,
+        "clock_v" to R.layout.odc_w_el_clock_v,
+        "clock_h" to R.layout.odc_w_el_clock_h,
+        "clock_vw" to R.layout.odc_w_el_clock_vw,
+        "clock_hw" to R.layout.odc_w_el_clock_hw,
+        "clockb_v" to R.layout.odc_w_el_clockb_v,
+        "clockb_h" to R.layout.odc_w_el_clockb_h,
+        "clockb_vw" to R.layout.odc_w_el_clockb_vw,
+        "clockb_hw" to R.layout.odc_w_el_clockb_hw,
+        "timer_v" to R.layout.odc_w_el_timer_v,
+        "timer_h" to R.layout.odc_w_el_timer_h,
+        "timer_vw" to R.layout.odc_w_el_timer_vw,
+        "timer_hw" to R.layout.odc_w_el_timer_hw,
+        "timerb_v" to R.layout.odc_w_el_timerb_v,
+        "timerb_h" to R.layout.odc_w_el_timerb_h,
+        "timerb_vw" to R.layout.odc_w_el_timerb_vw,
+        "timerb_hw" to R.layout.odc_w_el_timerb_hw,
     )
 
     fun get(type: String, variant: String): Int = layouts["${type}_$variant"] ?: R.layout.odc_w_el_spacer_v

@@ -25,6 +25,13 @@ object WidgetValidator {
             }
             WidgetBackground.validate(bg)
         }
+        obj.valueOf("refresh")?.let { r ->
+            if (r !is JSONObject) throw IllegalArgumentException("\"refresh\" must be an object like {\"url\":\"https://...\",\"minutes\":30}")
+            WidgetSync.validate(r)
+        }
+        obj.valueOf("values")?.let { v ->
+            if (v !is JSONObject) throw IllegalArgumentException("\"values\" must be an object like {\"temp\":21}")
+        }
         return obj
     }
 }

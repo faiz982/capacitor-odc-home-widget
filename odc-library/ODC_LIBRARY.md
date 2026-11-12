@@ -12,10 +12,10 @@ Set the mobile framework to **Capacitor**, then paste:
 {
   "buildConfigurations": {
     "capacitor": {
-      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget/archive/refs/tags/v0.5.0.tar.gz" }
+      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget/archive/refs/tags/v0.6.0.tar.gz" }
     }
   },
-  "metadata": { "mabs-min": "12.0.0", "name": "Home Widget Plugin", "version": "0.5.0" }
+  "metadata": { "mabs-min": "12.0.0", "name": "Home Widget Plugin", "version": "0.6.0" }
 }
 ```
 
@@ -202,3 +202,62 @@ Example `ThemeJson`: `{"accent":"#0B57D0","tile":"#F1F3F4","dark":{"accent":"#A8
 - The `widgetToggle` event no longer fires. If you added the `OnWidgetToggle`
   JavaScript to `WidgetTapListener`, it can stay (it does nothing) or be removed.
 - The `WidgetKind` static entity and the COUNT/LIST/ACTIONS structures can be deleted.
+
+## 8. Live widgets (v0.6.0)
+
+Clocks, timers, `{{placeholders}}`, background refresh and buttons need no new
+ODC code: they are all in `DataJson` (see the README section "Live widgets").
+Add these to use values and button events from the app.
+
+Every JavaScript node below starts with the usual plugin lookup:
+
+```js
+var cap = window.Capacitor;
+var plugin = cap && cap.isPluginAvailable && cap.isPluginAvailable('OdcHomeWidget')
+  ? ((cap.Plugins && cap.Plugins.OdcHomeWidget) || cap.registerPlugin('OdcHomeWidget'))
+  : null;
+```
+
+### SetWidgetValues
+Inputs: `ValuesJson` (Text, e.g. `{"temp":21,"city":"Paris"}`). Outputs: `Success`, `Error`.
+Updates only the live values and redraws: cheaper than resending the layout.
+
+```js
+if (!plugin) { $parameters.Success = false; $parameters.Error = 'Home Widget plugin not available in this build'; $resolve(); }
+else {
+  plugin.setWidgetValues({ data: $parameters.ValuesJson })
+    .then(function () { $parameters.Success = true; $resolve(); })
+    .catch(function (e) { $parameters.Success = false; $parameters.Error = (e && e.code ? e.code + ': ' : '') + (e && e.message ? e.message : String(e)); $resolve(); });
+}
+```
+
+### GetWidgetValues / RefreshWidgetNow
+Outputs: `ValuesJson` (Text), `Success`, `Error`. Same as above with:
+
+| Action | Call |
+|---|---|
+| `GetWidgetValues` | `plugin.getWidgetValues()` |
+| `RefreshWidgetNow` | `plugin.refreshNow()` |
+
+and in `.then`: `function (r) { $parameters.ValuesJson = r.data; $parameters.Success = true; $resolve(); }`.
+Use `JSONDeserialize` on `ValuesJson` with your own structure to read it.
+
+### Button event in `WidgetTapListener`
+- Add event `OnWidgetAction` with inputs `Type`, `Id`, `Key`, `ValueJson` (Text), `Ok` (Boolean), `Error` (Text).
+- Add client action `TriggerOnWidgetAction(...)` with the same inputs that triggers it.
+- In `OnReady`, after the `widgetTap` listener:
+
+```js
+if (plugin) {
+  if (window.__odcWidgetActionHandle) { window.__odcWidgetActionHandle.remove(); }
+  plugin.addListener('widgetAction', function (e) {
+    $actions.TriggerOnWidgetAction(e.type || '', e.id || '', e.key || '',
+      JSON.stringify(e.value === undefined ? null : e.value), !!e.ok, e.error || '');
+  }).then(function (handle) { window.__odcWidgetActionHandle = handle; });
+}
+```
+
+- In `OnDestroy`, also remove `window.__odcWidgetActionHandle`.
+
+Button presses made while the app was closed arrive when it next opens, so the
+app can sync them to the server (for example, `Id = "lights"` → update the entity).

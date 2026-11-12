@@ -9,6 +9,9 @@ public class OdcHomeWidgetPlugin: CAPPlugin, CAPBridgedPlugin {
     public let jsName = "OdcHomeWidget"
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "setWidgetData", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "setWidgetValues", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "getWidgetValues", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "refreshNow", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "setTheme", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "refresh", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "clear", returnType: CAPPluginReturnPromise),
@@ -20,6 +23,9 @@ public class OdcHomeWidgetPlugin: CAPPlugin, CAPBridgedPlugin {
     private let message = "Home widgets are Android-only in v1"
 
     @objc func setWidgetData(_ call: CAPPluginCall) { call.unimplemented(message) }
+    @objc func setWidgetValues(_ call: CAPPluginCall) { call.unimplemented(message) }
+    @objc func getWidgetValues(_ call: CAPPluginCall) { call.unimplemented(message) }
+    @objc func refreshNow(_ call: CAPPluginCall) { call.unimplemented(message) }
     @objc func setTheme(_ call: CAPPluginCall) { call.unimplemented(message) }
     @objc func refresh(_ call: CAPPluginCall) { call.unimplemented(message) }
     @objc func clear(_ call: CAPPluginCall) { call.unimplemented(message) }

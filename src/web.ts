@@ -1,12 +1,31 @@
 import { WebPlugin } from '@capacitor/core';
 
-import type { KindOptions, OdcHomeWidgetPlugin, SetThemeOptions, SetWidgetDataOptions } from './definitions';
+import type {
+  KindOptions,
+  OdcHomeWidgetPlugin,
+  SetThemeOptions,
+  SetWidgetDataOptions,
+  ValuesOptions,
+  ValuesResult,
+} from './definitions';
 
 const MESSAGE = 'Not available on web';
 
 /** Home screen widgets only exist on Android; every call rejects on web. */
 export class OdcHomeWidgetWeb extends WebPlugin implements OdcHomeWidgetPlugin {
   async setWidgetData(_options: SetWidgetDataOptions): Promise<void> {
+    throw this.unavailable(MESSAGE);
+  }
+
+  async setWidgetValues(_options: ValuesOptions): Promise<void> {
+    throw this.unavailable(MESSAGE);
+  }
+
+  async getWidgetValues(): Promise<ValuesResult> {
+    throw this.unavailable(MESSAGE);
+  }
+
+  async refreshNow(): Promise<ValuesResult> {
     throw this.unavailable(MESSAGE);
   }
 

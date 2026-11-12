@@ -42,18 +42,21 @@ object WidgetRenderer {
         WidgetStore.read(context, kind)?.let { runCatching { WidgetValidator.validate(kind, it) }.getOrNull() }
 
     fun build(context: Context, kind: WidgetKind, widgetId: Int): RemoteViews {
-        val json = readData(context, kind)
+        val raw = readData(context, kind)
         val views = RemoteViews(context.packageName, kind.layout)
-        val p = Painter(context, views, Themes.resolve(context, json))
+        val p = Painter(context, views, Themes.resolve(context, raw))
         p.tint(R.id.odc_w_bg) { it.background }
 
-        if (json == null) {
+        if (raw == null) {
             Bind.show(views, R.id.odc_widget_empty, true)
             Bind.show(views, R.id.odc_widget_content, false)
             p.text(R.id.odc_widget_empty) { it.muted }
             views.setOnClickPendingIntent(R.id.odc_widget_root, Taps.open(context, kind, null, 0))
             return views
         }
+
+        // Fill {{placeholders}} from the live values.
+        val json = Values.resolve(raw, WidgetStore.values(context))
 
         Bind.show(views, R.id.odc_widget_empty, false)
         Bind.show(views, R.id.odc_widget_content, true)

@@ -15,5 +15,10 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/odc_widget_custom_info" />
         </receiver>
+
+        <!-- Widget buttons that work without opening the app (set, toggle, add, cycle, refresh, http). -->
+        <receiver
+            android:name="com.odchomewidget.WidgetActionReceiver"
+            android:exported="false" />
     </application>
 </manifest>

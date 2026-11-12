@@ -46,17 +46,17 @@ object WidgetBackground {
         colors?.let { arr ->
             if (arr.length() > 6) throw IllegalArgumentException("background.gradient takes at most 6 colors")
             for (i in 0 until arr.length()) {
-                if (Themes.parse(arr.optString(i)) == null) {
+                if (!Values.hasPlaceholder(arr.optString(i)) && Themes.parse(arr.optString(i)) == null) {
                     throw IllegalArgumentException("background.gradient[$i] \"${arr.optString(i)}\" is not a hex color")
                 }
             }
         }
         val deco = bg.str("decoration").trim().lowercase()
-        if (deco.isNotEmpty() && deco !in DECORATIONS) {
+        if (deco.isNotEmpty() && !Values.hasPlaceholder(deco) && deco !in DECORATIONS) {
             throw IllegalArgumentException("background.decoration must be one of ${DECORATIONS.joinToString()}")
         }
         bg.str("decorationColor").takeIf { it.isNotBlank() }?.let {
-            if (Themes.parse(it) == null) throw IllegalArgumentException("background.decorationColor \"$it\" is not a hex color")
+            if (!Values.hasPlaceholder(it) && Themes.parse(it) == null) throw IllegalArgumentException("background.decorationColor \"$it\" is not a hex color")
         }
     }
 

@@ -21,6 +21,15 @@ var capacitorOdcHomeWidget = (function (exports, core) {
         async setWidgetData(_options) {
             throw this.unavailable(MESSAGE);
         }
+        async setWidgetValues(_options) {
+            throw this.unavailable(MESSAGE);
+        }
+        async getWidgetValues() {
+            throw this.unavailable(MESSAGE);
+        }
+        async refreshNow() {
+            throw this.unavailable(MESSAGE);
+        }
         async setTheme(_options) {
             throw this.unavailable(MESSAGE);
         }

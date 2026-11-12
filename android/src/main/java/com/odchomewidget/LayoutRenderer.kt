@@ -3,6 +3,7 @@ package com.odchomewidget
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Build
+import android.os.SystemClock
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.StrikethroughSpan
@@ -18,15 +19,17 @@ import org.json.JSONObject
  * Draws the WIDGET kind: the app sends a tree of elements as JSON and this turns
  * it into native views by nesting small RemoteViews (RemoteViews.addView).
  *
- * Element types: column, row, box, text, icon, image, progress, spacer, button.
+ * Element types: column, row, box, text, icon, image, progress, spacer, button,
+ * clock (ticks by itself, even with the app closed) and timer (counts up / down).
  * Common fields: type, children, padding (dp, or [start, top, end, bottom]),
- * weight (> 0 fills the remaining space), visible, deepLink.
+ * weight (> 0 fills the remaining space), visible (bool or condition), deepLink, action.
+ * [render] gets JSON whose {{placeholders}} are already filled.
  */
 object LayoutRenderer {
     const val MAX_ELEMENTS = 80
     const val MAX_DEPTH = 8
     private const val MAX_CLICK_SLOTS = 90
-    val TYPES = listOf("column", "row", "box", "text", "icon", "image", "progress", "spacer", "button")
+    val TYPES = listOf("column", "row", "box", "text", "icon", "image", "progress", "spacer", "button", "clock", "timer")
 
     private enum class Parent { VERTICAL, HORIZONTAL }
 
@@ -67,9 +70,16 @@ object LayoutRenderer {
         if (count[0] > MAX_ELEMENTS) throw IllegalArgumentException("layout has more than $MAX_ELEMENTS elements")
         listOf("color", "background").forEach { key ->
             val value = node.str(key).trim()
-            if (value.isNotEmpty() && ROLES[value.lowercase()] == null && Themes.parse(value) == null) {
+            if (value.isNotEmpty() && !Values.hasPlaceholder(value) && ROLES[value.lowercase()] == null && Themes.parse(value) == null) {
                 throw IllegalArgumentException("$path.$key \"$value\" must be a theme color name or a hex color")
             }
+        }
+        node.valueOf("action")?.let { action ->
+            if (action !is JSONObject) throw IllegalArgumentException("$path.action must be an object like {\"type\":\"toggle\",\"key\":\"lights\"}")
+            WidgetActions.validate(action, "$path.action")
+        }
+        if (type == "timer" && node.valueOf("since") == null && node.valueOf("until") == null) {
+            throw IllegalArgumentException("$path is a timer; give it \"since\" (count up) or \"until\" (count down)")
         }
         val children = node.valueOf("children") ?: return
         if (children !is JSONArray) throw IllegalArgumentException("$path.children must be an array")
@@ -95,7 +105,8 @@ object LayoutRenderer {
             Parent.VERTICAL -> if (weighted) "vw" else "v"
             Parent.HORIZONTAL -> if (weighted) "hw" else "h"
         }
-        val views = RemoteViews(c.context.packageName, ElementLayouts.get(type, variant))
+        val layoutType = if ((type == "clock" || type == "timer") && node.bool("bold")) type + "b" else type
+        val views = RemoteViews(c.context.packageName, ElementLayouts.get(layoutType, variant))
         val p = Painter(c.context, views, c.theme)
         val id = R.id.odc_w_el
 
@@ -122,6 +133,22 @@ object LayoutRenderer {
                 node.num("maxLines")?.let { views.setInt(id, "setMaxLines", it.toInt().coerceAtLeast(1)) }
                 if (hasAlignment(node)) views.setInt(id, "setGravity", gravity(node, Gravity.START, Gravity.CENTER_VERTICAL))
                 padding(c, views, id, node, 0.0)
+            }
+            "clock" -> {
+                // TextClock picks format24 or format12 from the phone's 24-hour setting.
+                val format = node.str("format").ifBlank { "HH:mm" }
+                views.setCharSequence(id, "setFormat24Hour", node.str("format24").ifBlank { format })
+                views.setCharSequence(id, "setFormat12Hour", node.str("format12").ifBlank { format })
+                node.str("timeZone").takeIf { it.isNotBlank() }?.let { views.setString(id, "setTimeZone", it) }
+                textStyle(c, views, p, id, node)
+            }
+            "timer" -> {
+                val countDown = node.valueOf("until") != null
+                val target = Dates.parse(node.valueOf(if (countDown) "until" else "since")) ?: System.currentTimeMillis()
+                val base = SystemClock.elapsedRealtime() + (target - System.currentTimeMillis())
+                views.setChronometer(id, base, node.str("format").ifBlank { null }, true)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) views.setChronometerCountDown(id, countDown)
+                textStyle(c, views, p, id, node)
             }
             "icon" -> {
                 WidgetIcons.bind(views, id, node.str("name"), p, color(node.str("color"), Palette::onBackground))
@@ -164,10 +191,14 @@ object LayoutRenderer {
             }
         }
 
-        if (node.valueOf("visible") != null && !node.bool("visible")) views.setViewVisibility(id, View.GONE)
+        if (!Values.truthy(node.valueOf("visible"))) views.setViewVisibility(id, View.GONE)
+        val action = node.obj("action")
         val link = node.str("deepLink")
-        if (link.isNotBlank() && c.slot < MAX_CLICK_SLOTS) {
-            views.setOnClickPendingIntent(id, Taps.open(c.context, WidgetKind.WIDGET, link, c.slot++))
+        if (c.slot < MAX_CLICK_SLOTS) {
+            when {
+                action != null -> views.setOnClickPendingIntent(id, WidgetActions.pendingIntent(c.context, action, c.slot++))
+                link.isNotBlank() -> views.setOnClickPendingIntent(id, Taps.open(c.context, WidgetKind.WIDGET, link, c.slot++))
+            }
         }
         return views
     }
@@ -184,6 +215,14 @@ object LayoutRenderer {
     }
 
     // ---- Helpers ------------------------------------------------------------
+
+    /** Size, color, alignment and padding shared by text-like elements (clock, timer). */
+    private fun textStyle(c: Ctx, views: RemoteViews, p: Painter, id: Int, node: JSONObject) {
+        p.text(id, color(node.str("color"), Palette::onBackground))
+        node.num("size")?.let { views.setTextViewTextSize(id, TypedValue.COMPLEX_UNIT_SP, it.toFloat()) }
+        if (hasAlignment(node)) views.setInt(id, "setGravity", gravity(node, Gravity.START, Gravity.CENTER_VERTICAL))
+        padding(c, views, id, node, 0.0)
+    }
 
     private fun color(value: String, default: (Palette) -> Int): (Palette) -> Int {
         val v = value.trim()

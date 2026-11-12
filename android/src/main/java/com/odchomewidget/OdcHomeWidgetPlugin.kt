@@ -10,6 +10,7 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import org.json.JSONException
 import org.json.JSONObject
+import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
 @CapacitorPlugin(name = "OdcHomeWidget")
@@ -17,6 +18,7 @@ class OdcHomeWidgetPlugin : Plugin() {
 
     companion object {
         const val EVENT_WIDGET_TAP = "widgetTap"
+        const val EVENT_WIDGET_ACTION = "widgetAction"
 
         const val ERR_INVALID_KIND = "OS-PLUG-HWGT-0001"
         const val ERR_INVALID_DATA = "OS-PLUG-HWGT-0002"
@@ -27,13 +29,42 @@ class OdcHomeWidgetPlugin : Plugin() {
 
         /** One worker: saves happen in call order, and image downloads stay off the UI thread. */
         private val worker = Executors.newSingleThreadExecutor()
+
+        @Volatile
+        private var instance: WeakReference<OdcHomeWidgetPlugin>? = null
+
+        /** Hands queued `widgetAction` events to the app when it is running. */
+        fun deliverPendingEvents() {
+            instance?.get()?.emitPendingEvents()
+        }
     }
 
     // ---- Lifecycle and taps -------------------------------------------------
 
     override fun load() {
         super.load()
+        instance = WeakReference(this)
         activity?.intent?.let { emitTap(it) }
+        emitPendingEvents()
+    }
+
+    override fun handleOnResume() {
+        super.handleOnResume()
+        emitPendingEvents()
+    }
+
+    /** Button presses made on the home screen (also while the app was closed). */
+    private fun emitPendingEvents() {
+        WidgetStore.drainEvents(context).forEach { e ->
+            val event = JSObject()
+            event.put("type", e.optString("type"))
+            event.put("id", e.optString("id"))
+            event.put("key", e.optString("key"))
+            event.put("value", e.opt("value"))
+            event.put("ok", e.optBoolean("ok", true))
+            event.put("error", e.optString("error"))
+            notifyListeners(EVENT_WIDGET_ACTION, event, true)
+        }
     }
 
     override fun handleOnNewIntent(intent: Intent) {
@@ -72,14 +103,62 @@ class OdcHomeWidgetPlugin : Plugin() {
         }
         worker.execute {
             try {
+                // "values" in the JSON are starting values: keys that already have a value
+                // (changed by a widget button, a refresh or setWidgetValues) keep it.
+                val values = WidgetStore.updateValues(context) { v ->
+                    json.obj("values")?.let { start -> start.keys().forEach { k -> if (v.keyFor(k) == null) v.put(k, start.opt(k)) } }
+                }
                 // Download images first, so the widget never shows a half-loaded state.
-                ImageCache.prefetch(context, json)
+                ImageCache.prefetch(context, Values.resolve(json, values))
                 if (!WidgetStore.save(context, kind, data)) {
                     call.reject("Could not save widget data", ERR_STORAGE)
                     return@execute
                 }
                 WidgetRenderer.refresh(context, kind)
+                WidgetSync.schedule(context, json)
                 call.resolve()
+            } catch (e: Exception) {
+                call.reject(e.message ?: "Unexpected error", ERR_UNEXPECTED, e)
+            }
+        }
+    }
+
+    /** Merges values into the live values (for {{placeholders}}) and redraws. */
+    @PluginMethod
+    fun setWidgetValues(call: PluginCall) {
+        val data = call.getString("data") ?: call.getObject("data")?.toString()
+        val values = try {
+            JSONObject(data ?: "")
+        } catch (e: JSONException) {
+            call.reject("data must be a JSON object string like {\"temp\":21}", ERR_INVALID_DATA)
+            return
+        }
+        worker.execute {
+            try {
+                WidgetStore.updateValues(context) { Values.merge(it, values) }
+                WidgetSync.redraw(context)
+                call.resolve()
+            } catch (e: Exception) {
+                call.reject(e.message ?: "Unexpected error", ERR_UNEXPECTED, e)
+            }
+        }
+    }
+
+    /** The live values, including ones changed by widget buttons and background refreshes. */
+    @PluginMethod
+    fun getWidgetValues(call: PluginCall) {
+        guarded(call) {
+            call.resolve(JSObject().put("data", WidgetStore.values(context).toString()))
+        }
+    }
+
+    /** Runs the widget's "refresh" request now and redraws. */
+    @PluginMethod
+    fun refreshNow(call: PluginCall) {
+        worker.execute {
+            try {
+                WidgetSync.run(context, WidgetSync.JOB_REFRESH, null)
+                call.resolve(JSObject().put("data", WidgetStore.values(context).toString()))
             } catch (e: Exception) {
                 call.reject(e.message ?: "Unexpected error", ERR_UNEXPECTED, e)
             }
@@ -127,6 +206,7 @@ class OdcHomeWidgetPlugin : Plugin() {
         val kind = requireKind(call) ?: return
         guarded(call) {
             WidgetStore.clear(context, kind)
+            WidgetSync.cancel(context)
             WidgetRenderer.refresh(context, kind)
             call.resolve()
         }
