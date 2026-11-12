@@ -12,14 +12,6 @@ android/local.properties
 *.iml
 
 # Example app
-example-app/node_modules/
-example-app/www/vendor/
-example-app/android/app/build/
-example-app/android/build/
-example-app/android/.gradle/
-example-app/android/local.properties
-example-app/android/app/src/main/assets/public/
-example-app/android/capacitor-cordova-android-plugins/
 
 # OS
 .DS_Store

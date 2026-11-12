@@ -12,10 +12,10 @@ Set the mobile framework to **Capacitor**, then paste:
 {
   "buildConfigurations": {
     "capacitor": {
-      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget/archive/refs/tags/v0.4.0.tar.gz" }
+      "source": { "npm": "https://github.com/faiz982/capacitor-odc-home-widget/archive/refs/tags/v0.5.0.tar.gz" }
     }
   },
-  "metadata": { "mabs-min": "12.0.0", "name": "Home Widget Plugin", "version": "0.4.0" }
+  "metadata": { "mabs-min": "12.0.0", "name": "Home Widget Plugin", "version": "0.5.0" }
 }
 ```
 
@@ -28,21 +28,15 @@ Set the mobile framework to **Capacitor**, then paste:
   automatically, and widget taps reuse the running activity
   (`CLEAR_TOP | SINGLE_TOP`).
 
-## 2. Static entity and structures
+## 2. Kind and data
 
-**Static entity `WidgetKind`** (Label: Text) with records `COUNT`, `LIST`, `ACTIONS`.
-Pass `Entities.WidgetKind.COUNT` etc. to the actions' `Kind` input (Text).
+There is one widget kind, `WIDGET`. Pass `"WIDGET"` (or an empty text) to every
+action's `Kind` input. `DataJson` describes the whole widget: a `layout` tree,
+an optional `background`, `deepLink` and `theme`. See the plugin README section
+"The JSON" for every field.
 
-**Structures** (build data with these, then `JSONSerialize`). Attribute names can
-stay PascalCase: the plugin matches JSON keys case-insensitively.
-
-| Structure | Attributes |
-|---|---|
-| `CountWidgetData` | `Title` (Text), `Value` (Text), `Subtitle` (Text), `DeepLink` (Text) |
-| `WidgetLinkItem` | `Text` (Text), `DeepLink` (Text) |
-| `ListWidgetData` | `Title` (Text), `Items` (WidgetLinkItem List, max 3 used), `DeepLink` (Text) |
-| `WidgetActionItem` | `Label` (Text), `DeepLink` (Text) |
-| `ActionsWidgetData` | `Title` (Text), `Actions` (WidgetActionItem List, max 3 used) |
+Build `DataJson` as a Text expression, or with structures and `JSONSerialize`.
+Attribute names can stay PascalCase: the plugin matches JSON keys case-insensitively.
 
 ## 3. Client actions (all Public)
 
@@ -170,26 +164,17 @@ added, so put the block on the app's default screen.
 ## 5. Demo app `HomeWidgetDemo`
 
 1. New mobile app, framework **Capacitor**, reference all public elements of `HomeWidget`.
-2. Home screen: three buttons. Each one assigns a structure, runs
-   `JSONSerialize` on it, then calls `SetWidgetData(Kind, JSONSerialize.JSON)`.
-   Example for COUNT: `Title = "Open approvals"`, `Value = "12"`,
-   `Subtitle = "Updated " + FormatDateTime(CurrDateTime(), "HH:mm")`, `DeepLink = "approvals"`.
+2. Home screen: a button that calls `SetWidgetData("WIDGET", DataJson)` with a
+   layout from the README (for example the "Get started" card).
 3. A **Pin widget** button: `IsPinSupported` → if true, `RequestPinWidget`.
-4. Drop `WidgetTapListener` on the screen. In `OnWidgetTap`: show a feedback
-   message with `DeepLink`, then a Switch on `DeepLink` (for example
-   `"approvals"` → Approvals screen).
+4. Drop `WidgetTapListener` on the screen. In `OnWidgetTap`: switch on `DeepLink`
+   to open the matching screen.
 5. Portal → app → **Mobile distribution** → MABS 12.1 → Android build.
 
-## 6. Upgrading the library to v0.2.0 (11 templates, brand colors, toggles)
+## 6. Optional: `SetWidgetTheme`
 
-1. **Extensibility:** change the tag in the JSON above to `#v0.2.0` (already shown) and publish.
-2. **Nothing else is required for the new templates.** `SetWidgetData` already takes any
-   `Kind` text and JSON, so `"INFO"`, `"STATS"`, `"HERO"`, `"ARTICLES"`, `"GRID"`,
-   `"MESSAGES"`, `"TOGGLES"` and `"CHECKLIST"` work as they are. Build the JSON with your own
-   structures and `JSONSerialize`; see the plugin README for every field.
-   Add the new names to the `WidgetKind` static entity if you use it.
-3. **Optional: `SetWidgetTheme`** client action. Input `ThemeJson` (Text); outputs `Success`, `Error`.
-   JavaScript node:
+Client action with input `ThemeJson` (Text); outputs `Success`, `Error`.
+Theme colors are what layout color names (`accent`, `muted`, `tile`...) resolve to.
 
 ```js
 var cap = window.Capacitor;
@@ -205,21 +190,15 @@ else {
 }
 ```
 
-   Example `ThemeJson`: `{"accent":"#0B57D0","tileActive":"#D3E3FD","onTileActive":"#041E49"}`.
+Example `ThemeJson`: `{"accent":"#0B57D0","tile":"#F1F3F4","dark":{"accent":"#A8C7FA"}}`.
 
-4. **Optional: toggle events** for `TOGGLES` and `CHECKLIST`. In the `WidgetTapListener` block:
-   - Add event `OnWidgetToggle` with inputs `Kind` (Text), `Id` (Text), `IsOn` (Boolean).
-   - Add client action `TriggerOnWidgetToggle(Kind, Id, IsOn)` that triggers it.
-   - In the `OnReady` JavaScript, after the `widgetTap` listener, add:
+## 7. Upgrading from v0.4 or older
 
-```js
-if (plugin) {
-  if (window.__odcWidgetToggleHandle) { window.__odcWidgetToggleHandle.remove(); }
-  plugin.addListener('widgetToggle', function (e) {
-    $actions.TriggerOnWidgetToggle(e.kind || '', e.id || '', !!e.on);
-  }).then(function (handle) { window.__odcWidgetToggleHandle = handle; });
-}
-```
-
-   - In `OnDestroy`, also remove `window.__odcWidgetToggleHandle`.
-   Taps made while the app was closed arrive when the app next opens.
+- v0.5.0 removed the 11 templates (COUNT, LIST, ACTIONS, INFO, STATS, HERO,
+  ARTICLES, GRID, MESSAGES, TOGGLES, CHECKLIST). Only **Widget** stays in the
+  launcher's widget picker; template widgets already on a home screen disappear
+  after the update.
+- Calls with another `Kind` now fail with `OS-PLUG-HWGT-0001`.
+- The `widgetToggle` event no longer fires. If you added the `OnWidgetToggle`
+  JavaScript to `WidgetTapListener`, it can stay (it does nothing) or be removed.
+- The `WidgetKind` static entity and the COUNT/LIST/ACTIONS structures can be deleted.

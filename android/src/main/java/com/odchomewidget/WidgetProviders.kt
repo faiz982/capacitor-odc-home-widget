@@ -15,6 +15,7 @@ abstract class BaseWidgetProvider(private val kind: WidgetKind) : AppWidgetProvi
         WidgetRenderer.update(context, appWidgetManager, kind, appWidgetIds)
     }
 
+    // Redraw on resize: the background bitmap is drawn at the widget's size.
     override fun onAppWidgetOptionsChanged(
         context: Context,
         appWidgetManager: AppWidgetManager,
@@ -25,15 +26,4 @@ abstract class BaseWidgetProvider(private val kind: WidgetKind) : AppWidgetProvi
     }
 }
 
-class CountWidgetProvider : BaseWidgetProvider(WidgetKind.COUNT)
-class ListWidgetProvider : BaseWidgetProvider(WidgetKind.LIST)
-class ActionsWidgetProvider : BaseWidgetProvider(WidgetKind.ACTIONS)
-class InfoWidgetProvider : BaseWidgetProvider(WidgetKind.INFO)
-class StatsWidgetProvider : BaseWidgetProvider(WidgetKind.STATS)
-class HeroWidgetProvider : BaseWidgetProvider(WidgetKind.HERO)
-class ArticlesWidgetProvider : BaseWidgetProvider(WidgetKind.ARTICLES)
-class GridWidgetProvider : BaseWidgetProvider(WidgetKind.GRID)
-class MessagesWidgetProvider : BaseWidgetProvider(WidgetKind.MESSAGES)
-class TogglesWidgetProvider : BaseWidgetProvider(WidgetKind.TOGGLES)
-class ChecklistWidgetProvider : BaseWidgetProvider(WidgetKind.CHECKLIST)
 class CustomWidgetProvider : BaseWidgetProvider(WidgetKind.WIDGET)

@@ -14,11 +14,11 @@ export class OdcHomeWidgetWeb extends WebPlugin implements OdcHomeWidgetPlugin {
     throw this.unavailable(MESSAGE);
   }
 
-  async refresh(_options: KindOptions): Promise<void> {
+  async refresh(_options?: KindOptions): Promise<void> {
     throw this.unavailable(MESSAGE);
   }
 
-  async clear(_options: KindOptions): Promise<void> {
+  async clear(_options?: KindOptions): Promise<void> {
     throw this.unavailable(MESSAGE);
   }
 
@@ -26,11 +26,11 @@ export class OdcHomeWidgetWeb extends WebPlugin implements OdcHomeWidgetPlugin {
     return { supported: false };
   }
 
-  async requestPin(_options: KindOptions): Promise<void> {
+  async requestPin(_options?: KindOptions): Promise<void> {
     throw this.unavailable(MESSAGE);
   }
 
-  async getInstalledCount(_options: KindOptions): Promise<{ count: number }> {
+  async getInstalledCount(_options?: KindOptions): Promise<{ count: number }> {
     throw this.unavailable(MESSAGE);
   }
 }
